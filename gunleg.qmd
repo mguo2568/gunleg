@@ -153,7 +153,40 @@ ggplotly(g1) |> plotly::style(hoverlabel = list(align = "left"))
 ## Massachusetts
 ## Michigan
 ## Minnesota
+
 ## Mississippi
+
+```{r somecode,echo=FALSE}
+# this code written by claude opus 5.5
+wrap_hover <- function(x, width = 40, max_lines = Inf, sep = "<br>", escape = TRUE) {
+  x <- as.character(x)
+  vapply(x, function(s) {
+    if (is.na(s) || !nzchar(s)) return(s)
+    if (escape) {                       # keep "<", ">", "&" from being read as HTML
+      s <- gsub("&", "&amp;", s, fixed = TRUE)
+      s <- gsub("<", "&lt;",  s, fixed = TRUE)
+      s <- gsub(">", "&gt;",  s, fixed = TRUE)
+    }
+    # split any word longer than the line width (long IDs, snake_case names, URLs)
+    s <- gsub(sprintf("(\\S{%d})(?=\\S)", width - 1), "\\1 ", s, perl = TRUE)
+    lines <- strwrap(s, width = width)
+    if (length(lines) > max_lines) {
+      lines <- lines[seq_len(max_lines)]
+      lines[max_lines] <- paste0(lines[max_lines], " \u2026")
+    }
+    paste(lines, collapse = sep)
+  }, character(1), USE.NAMES = FALSE)
+}
+```
+
+```{r doplyAL}
+library(plotly)
+g1 = ggplot(nd |> filter(effect=="Permissive", effdate > ymd("1985-01-01"), state=="Mississippi"), 
+   aes(x=effdate, text=paste(state,lawclass,wrap_hover(content)))) + geom_histogram(binwidth=365) +
+   ggtitle("Counts of permissive legislative changes in Mississippi after 1985")
+ggplotly(g1) |> plotly::style(hoverlabel = list(align = "left"))
+```
+
 ## Missouri
 ## Montana
 ## Nebraska
